@@ -1,0 +1,21 @@
+{
+  "accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1_score": 1.0,
+  "avg_confidence": 0.8966666666666666,
+  "confidence_calibration": NaN,
+  "avg_response_time": 5.709183819999453,
+  "total_cases": 3,
+  "correct_predictions": 3,
+  "category_accuracy": {
+    "database": 1.0,
+    "null_pointer": 1.0,
+    "memory": 1.0
+  },
+  "category_counts": {
+    "database": 1,
+    "null_pointer": 1,
+    "memory": 1
+  }
+}

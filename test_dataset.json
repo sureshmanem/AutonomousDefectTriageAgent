@@ -1,0 +1,74 @@
+[
+    {
+        "id": "test_db_001",
+        "error_log": "2024-01-08 10:15:32 ERROR Database connection failed\njava.sql.SQLException: Connection timeout after 30000ms\nat com.db.ConnectionPool.getConnection(ConnectionPool.java:123)\nat com.service.UserService.findUser(UserService.java:45)\nCaused by: Network unreachable\nDatabase server: db-prod-01.example.com:5432",
+        "ground_truth_root_cause": "Database connection timeout due to network issues",
+        "ground_truth_category": "database",
+        "severity": "high",
+        "tags": [
+            "database",
+            "network",
+            "timeout"
+        ]
+    },
+    {
+        "id": "test_mem_001",
+        "error_log": "2024-01-08 11:22:45 FATAL OutOfMemoryError during batch job\njava.lang.OutOfMemoryError: Java heap space\nat com.batch.DataProcessor.loadRecords(DataProcessor.java:156)\nat com.batch.BatchJob.execute(BatchJob.java:234)\nHeap size: 2048MB\nRecords to process: 5000000",
+        "ground_truth_root_cause": "Insufficient heap memory for large batch processing",
+        "ground_truth_category": "memory",
+        "severity": "critical",
+        "tags": [
+            "memory",
+            "heap",
+            "batch"
+        ]
+    },
+    {
+        "id": "test_npe_001",
+        "error_log": "2024-01-08 09:30:12 ERROR NullPointerException in payment service\njava.lang.NullPointerException: Cannot invoke 'getAmount' on null object\nat com.payment.PaymentService.processPayment(PaymentService.java:67)\nat com.controller.PaymentController.checkout(PaymentController.java:89)\nUser ID: user_12345\nSession: sess_abc123",
+        "ground_truth_root_cause": "Missing null validation in payment processing logic",
+        "ground_truth_category": "null_pointer",
+        "severity": "high",
+        "tags": [
+            "nullpointer",
+            "payment",
+            "validation"
+        ]
+    },
+    {
+        "id": "test_net_001",
+        "error_log": "2024-01-08 14:45:23 ERROR Failed to connect to external API\njava.net.ConnectException: Connection refused: connect\nat com.external.ApiClient.sendRequest(ApiClient.java:102)\nat com.service.OrderService.validateOrder(OrderService.java:78)\nTarget URL: https://api.partner.com/v1/validate\nRetry count: 3",
+        "ground_truth_root_cause": "External API service unavailable or network connectivity issue",
+        "ground_truth_category": "network",
+        "severity": "medium",
+        "tags": [
+            "network",
+            "api",
+            "external"
+        ]
+    },
+    {
+        "id": "test_cfg_001",
+        "error_log": "2024-01-08 08:10:56 ERROR Configuration property missing\njava.lang.IllegalStateException: Required property 'database.url' not found\nat com.config.ConfigLoader.validateConfig(ConfigLoader.java:45)\nat com.App.initialize(App.java:23)\nEnvironment: production\nConfig file: application.properties",
+        "ground_truth_root_cause": "Missing required configuration property in production environment",
+        "ground_truth_category": "configuration",
+        "severity": "critical",
+        "tags": [
+            "configuration",
+            "properties",
+            "deployment"
+        ]
+    },
+    {
+        "id": "test_dep_001",
+        "error_log": "2024-01-08 16:20:34 ERROR Incompatible library version\njava.lang.NoSuchMethodError: com.library.Utils.processData(Ljava/lang/String;)V\nat com.service.DataService.transform(DataService.java:89)\nat com.processor.MainProcessor.run(MainProcessor.java:45)\nLibrary version: 2.1.0\nExpected version: 3.0.0+",
+        "ground_truth_root_cause": "Library version incompatibility causing method signature mismatch",
+        "ground_truth_category": "dependency",
+        "severity": "high",
+        "tags": [
+            "dependency",
+            "version",
+            "compatibility"
+        ]
+    }
+]
