@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  defect-triage-api:
+    build: .
+    container_name: defect-triage-api
+    ports:
+      - "8000:8000"
+    environment:
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-01}
+      - AGENT_TEMPERATURE=${AGENT_TEMPERATURE:-0.3}
+      - AGENT_MAX_TOKENS=${AGENT_MAX_TOKENS:-1500}
+      - VECTOR_DB_PATH=/app/vector_db
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - API_LOG_LEVEL=info
+    volumes:
+      - ./vector_db:/app/vector_db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s

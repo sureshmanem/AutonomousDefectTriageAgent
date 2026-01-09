@@ -137,6 +137,71 @@ async def triage_defect():
 asyncio.run(triage_defect())
 ```
 
+### Step 4: Run REST API Server
+
+```bash
+# Start the API server
+python api.py
+
+# Or use uvicorn directly
+uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+
+# Access the API documentation
+# Open http://localhost:8000/docs in your browser
+```
+
+#### API Endpoints
+
+- `GET /` - API information
+- `GET /health` - Health check
+- `GET /stats` - System statistics
+- `POST /analyze` - Analyze single error log
+- `POST /analyze/batch` - Batch analysis
+- `POST /add-defect` - Add defect to knowledge base
+- `POST /clear-knowledge-base` - Clear knowledge base
+
+#### Example API Usage
+
+```python
+from api_client import DefectTriageClient
+
+client = DefectTriageClient("http://localhost:8000")
+
+# Analyze a defect
+result = client.analyze_defect(
+    error_log="ERROR: Database connection timeout...",
+    top_k=3
+)
+
+print(f"Root Cause: {result['root_cause']}")
+print(f"Confidence: {result['confidence']:.2%}")
+```
+
+#### cURL Examples
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Analyze defect
+curl -X POST http://localhost:8000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "error_log": "ERROR: Database connection failed...",
+    "top_k": 3,
+    "include_similar": true
+  }'
+
+# Add new defect
+curl -X POST http://localhost:8000/add-defect \
+  -H "Content-Type: application/json" \
+  -d '{
+    "error_log": "ERROR: New error...",
+    "source": "Jenkins",
+    "metadata": {"severity": "high"}
+  }'
+```
+
 ## Quick Test
 
 Run the complete pipeline:
@@ -163,6 +228,58 @@ cp .env.example .env
 python defect_triage_agent.py
 ```
 
+## Docker Deployment
+
+### Build and Run with Docker
+
+```bash
+# Build the Docker image
+docker build -t defect-triage-api .
+
+# Run the container
+docker run -d \
+  --name defect-triage \
+  -p 8000:8000 \
+  --env-file .env \
+  -v $(pwd)/vector_db:/app/vector_db \
+  defect-triage-api
+
+# View logs
+docker logs -f defect-triage
+
+# Stop the container
+docker stop defect-triage
+```
+
+### Using Docker Compose
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+
+# Rebuild and restart
+docker-compose up -d --build
+```
+
+### Production Deployment
+
+For production deployment:
+
+1. **Use a production WSGI server** (already using Uvicorn)
+2. **Set up reverse proxy** (Nginx/Traefik)
+3. **Enable HTTPS** with SSL certificates
+4. **Configure CORS** appropriately in `api.py`
+5. **Set up monitoring** (health checks, metrics)
+6. **Use persistent volumes** for vector database
+7. **Implement rate limiting**
+8. **Add authentication** (API keys, OAuth)
+
 ## Features
 
 - ✅ Comprehensive timestamp removal (ISO, Unix, custom formats)
@@ -183,6 +300,12 @@ python defect_triage_agent.py
 - ✅ Evaluation suite with multiple metrics
 - ✅ Per-category performance analysis
 - ✅ Confidence calibration measurement
+- ✅ Production-ready REST API with FastAPI
+- ✅ Docker containerization support
+- ✅ Auto-generated API documentation (OpenAPI/Swagger)
+- ✅ Health checks and monitoring endpoints
+- ✅ Batch processing capabilities
+- ✅ Background task processing
 
 ## Output Format
 
@@ -279,9 +402,11 @@ The evaluation suite provides:
 1. ~~Implement `VectorMemory` class with FAISS~~ ✅
 2. ~~Build Semantic Kernel agent with Azure OpenAI integration~~ ✅
 3. ~~Add evaluation and testing suite~~ ✅
-4. Build REST API for production deployment
+4. ~~Build REST API for production deployment~~ ✅
 5. Add web UI for interactive triage
 6. Implement continuous learning from new defects
+7. Add Kubernetes deployment manifests
+8. Implement request caching and rate limiting
 
 ## Project Structure
 
@@ -290,10 +415,14 @@ AutonomousDefectTriageAgent/
 ├── log_ingestor.py          # Step 1: Log processing
 ├── vector_memory.py          # Step 2: Vector storage
 ├── defect_triage_agent.py   # Step 3: SK agent
+├── api.py                   # Step 4: REST API
+├── api_client.py            # API client example
 ├── test_defect_triage.py    # Unit tests
 ├── evaluation.py            # Evaluation suite
 ├── test_dataset.json        # Sample test cases
 ├── requirements.txt          # Dependencies
+├── Dockerfile               # Docker container
+├── docker-compose.yml       # Docker Compose config
 ├── .env.example             # Configuration template
 ├── .gitignore               # Git ignore rules
 └── README.md                # This file
