@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   defect-triage-api:
-    build: .
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
     container_name: defect-triage-api
     ports:
       - "8000:8000"
@@ -13,12 +15,13 @@ services:
       - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-01}
       - AGENT_TEMPERATURE=${AGENT_TEMPERATURE:-0.3}
       - AGENT_MAX_TOKENS=${AGENT_MAX_TOKENS:-1500}
-      - VECTOR_DB_PATH=/app/vector_db
+      - VECTOR_DB_PATH=/app/data/vector_db
       - API_HOST=0.0.0.0
       - API_PORT=8000
       - API_LOG_LEVEL=info
     volumes:
-      - ./vector_db:/app/vector_db
+      - ../data/vector_db:/app/data/vector_db
+      - ../data/logs:/app/data/logs
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

@@ -1,4 +1,0 @@
-case_id,predicted_root_cause,ground_truth_root_cause,predicted_category,ground_truth_category,confidence,is_correct,response_time,similar_defects_count
-test_001,The database connection pool is exhausted due to insufficient available connections or prolonged connection retention by client services.,Database connection pool exhausted due to timeout,database,database,0.92,True,4.759486208999078,3
-test_002,Insufficient Java heap space allocated for batch processing tasks.,Insufficient heap size for batch processing,memory,memory,0.92,True,4.945505916999537,3
-test_003,The root cause is a null pointer exception caused by the 'getAmount' method being invoked on a null object in the payment processing flow. This indicates that the object representing the payment details was not properly initialized or retrieved before being used.,Missing null check in payment processing,null_pointer,null_pointer,0.85,True,7.422559333999743,3

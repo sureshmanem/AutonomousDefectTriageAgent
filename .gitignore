@@ -36,14 +36,19 @@ env/
 *.swo
 *~
 
-# Vector database
-vector_db/
+# Data directories
+data/vector_db/
+data/logs/
 *.pkl
 *.index
 
 # Logs
 *.log
 logs/
+
+# Evaluation outputs
+evaluation/evaluation_results.csv
+evaluation/evaluation_report.txt
 
 # OS
 .DS_Store

@@ -4,19 +4,19 @@ An Agentic AI system that automates the analysis of Jenkins failure logs using M
 
 ## Architecture
 
-### 1. Log Ingestor (`log_ingestor.py`) ✅
+### 1. Log Ingestor (`src/log_ingestor.py`) ✅
 - Reads Jenkins failure logs
 - Removes timestamps using regex patterns
 - Chunks text into 50-line blocks centered around Exception keywords
 - Uses strict type hinting and Python 3.10+ syntax
 
-### 2. Vector Memory (`vector_memory.py`) ✅
+### 2. Vector Memory (`src/vector_memory.py`) ✅
 - FAISS-based vector storage with multiple index types
 - Sentence-transformers embeddings (all-MiniLM-L6-v2)
 - Methods: `add_documents()`, `search_similar()`, `save()`, `load()`
 - Full async/await support for non-blocking operations
 
-### 3. Semantic Kernel Agent (`defect_triage_agent.py`) ✅
+### 3. Semantic Kernel Agent (`src/defect_triage_agent.py`) ✅
 - Takes new error logs as input
 - RAG pattern: Retrieves top 3 similar historical defects
 - Azure OpenAI analysis with structured JSON output
@@ -48,7 +48,7 @@ AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4
 ### Step 1: Process Log Files
 
 ```python
-from log_ingestor import LogIngestor
+from src.log_ingestor import LogIngestor
 
 # Initialize ingestor
 ingestor = LogIngestor(chunk_size=50)
@@ -67,7 +67,7 @@ df = ingestor.chunks_to_dataframe(chunks)
 ### Step 2: Build Vector Memory
 
 ```python
-from vector_memory import VectorMemory
+from src.vector_memory import VectorMemory
 import asyncio
 
 async def setup_vector_db():
@@ -100,8 +100,8 @@ asyncio.run(setup_vector_db())
 ### Step 3: Run Defect Triage Agent
 
 ```python
-from defect_triage_agent import DefectTriageAgent
-from vector_memory import VectorMemory
+from src.defect_triage_agent import DefectTriageAgent
+from src.vector_memory import VectorMemory
 import asyncio
 import os
 from dotenv import load_dotenv
@@ -141,10 +141,10 @@ asyncio.run(triage_defect())
 
 ```bash
 # Start the API server
-python api.py
+python src/api.py
 
 # Or use uvicorn directly
-uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+uvicorn src.api:app --host 0.0.0.0 --port 8000 --reload
 
 # Access the API documentation
 # Open http://localhost:8000/docs in your browser
@@ -163,7 +163,7 @@ uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 #### Example API Usage
 
 ```python
-from api_client import DefectTriageClient
+from src.api_client import DefectTriageClient
 
 client = DefectTriageClient("http://localhost:8000")
 
@@ -208,13 +208,13 @@ Run the complete pipeline:
 
 ```bash
 # Test log ingestion
-python log_ingestor.py
+python src/log_ingestor.py
 
 # Test vector memory
-python vector_memory.py
+python src/vector_memory.py
 
 # Test defect triage agent (requires Azure OpenAI)
-python defect_triage_agent.py
+python src/defect_triage_agent.py
 ```
 
 ## Complete Example
@@ -225,7 +225,7 @@ cp .env.example .env
 # Edit .env with your Azure OpenAI credentials
 
 # 2. Run end-to-end triage
-python defect_triage_agent.py
+python src/defect_triage_agent.py
 ```
 
 ## Docker Deployment
@@ -234,14 +234,15 @@ python defect_triage_agent.py
 
 ```bash
 # Build the Docker image
-docker build -t defect-triage-api .
+docker build -f deployment/Dockerfile -t defect-triage-api .
 
 # Run the container
 docker run -d \
   --name defect-triage \
   -p 8000:8000 \
   --env-file .env \
-  -v $(pwd)/vector_db:/app/vector_db \
+  -v $(pwd)/data/vector_db:/app/data/vector_db \
+  -v $(pwd)/data/logs:/app/data/logs \
   defect-triage-api
 
 # View logs
@@ -254,6 +255,9 @@ docker stop defect-triage
 ### Using Docker Compose
 
 ```bash
+# Navigate to deployment directory
+cd deployment
+
 # Start all services
 docker-compose up -d
 
@@ -265,6 +269,9 @@ docker-compose down
 
 # Rebuild and restart
 docker-compose up -d --build
+
+# Return to project root
+cd ..
 ```
 
 ### Production Deployment
@@ -338,13 +345,13 @@ Run the comprehensive test suite:
 
 ```bash
 # Run all tests
-pytest test_defect_triage.py -v
+pytest tests/test_defect_triage.py -v
 
 # Run specific test class
-pytest test_defect_triage.py::TestLogIngestor -v
+pytest tests/test_defect_triage.py::TestLogIngestor -v
 
 # Run with coverage
-pytest test_defect_triage.py --cov=. --cov-report=html
+pytest tests/ --cov=src --cov-report=html
 ```
 
 ## Evaluation
@@ -353,12 +360,12 @@ Evaluate the agent's performance on a test dataset:
 
 ```bash
 # Run evaluation with sample dataset
-python evaluation.py
+python evaluation/evaluation.py
 
 # This will generate:
-# - evaluation_report.txt (detailed metrics)
-# - evaluation_results.csv (per-case results)
-# - evaluation_metrics.json (aggregated metrics)
+# - evaluation/evaluation_report.txt (detailed metrics)
+# - evaluation/evaluation_results.csv (per-case results)
+# - evaluation/evaluation_metrics.json (aggregated metrics)
 ```
 
 ### Custom Test Dataset
@@ -381,7 +388,7 @@ Create your own test dataset in JSON format:
 Load and evaluate:
 
 ```python
-from evaluation import load_test_cases_from_json, DefectTriageEvaluator
+from evaluation.evaluation import load_test_cases_from_json, DefectTriageEvaluator
 
 test_cases = load_test_cases_from_json("your_dataset.json")
 results, metrics = await evaluator.evaluate_dataset(test_cases)
@@ -412,20 +419,35 @@ The evaluation suite provides:
 
 ```
 AutonomousDefectTriageAgent/
-├── log_ingestor.py          # Step 1: Log processing
-├── vector_memory.py          # Step 2: Vector storage
-├── defect_triage_agent.py   # Step 3: SK agent
-├── api.py                   # Step 4: REST API
-├── api_client.py            # API client example
-├── test_defect_triage.py    # Unit tests
-├── evaluation.py            # Evaluation suite
-├── test_dataset.json        # Sample test cases
+├── src/                      # Source code
+│   ├── __init__.py
+│   ├── log_ingestor.py       # Step 1: Log processing
+│   ├── vector_memory.py      # Step 2: Vector storage
+│   ├── defect_triage_agent.py # Step 3: SK agent
+│   ├── api.py                # REST API server
+│   └── api_client.py         # API client example
+├── tests/                    # Test files
+│   ├── __init__.py
+│   ├── test_defect_triage.py # Unit tests
+│   └── test_dataset.json     # Sample test cases
+├── evaluation/               # Evaluation suite
+│   ├── __init__.py
+│   ├── evaluation.py         # Evaluation script
+│   ├── evaluation_metrics.json
+│   ├── evaluation_report.txt
+│   └── evaluation_results.csv
+├── deployment/               # Docker & deployment
+│   ├── Dockerfile
+│   └── docker-compose.yml
+├── docs/                     # Documentation
+│   └── MockInterview.md
+├── data/                     # Data storage
+│   ├── logs/                 # Log files
+│   └── vector_db/            # FAISS index
 ├── requirements.txt          # Dependencies
-├── Dockerfile               # Docker container
-├── docker-compose.yml       # Docker Compose config
-├── .env.example             # Configuration template
-├── .gitignore               # Git ignore rules
-└── README.md                # This file
+├── .env.example              # Configuration template
+├── .gitignore                # Git ignore rules
+└── README.md                 # This file
 ```
 
 ## Requirements
