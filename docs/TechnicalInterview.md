@@ -2,6 +2,24 @@
 
 ## System Architecture & Design
 
+### The Pitch (2min)
+
+1. The Situation (The Pain Point)
+"In our regression cycles, our biggest bottleneck wasn't finding bugs, it was diagnosing them. We had thousands of lines of Jenkins logs, and engineers were spending 3 to 4 hours per sprint just digging through stack traces to figure out if a failure was a real bug, an environment issue, or a flaky test. It was a massive drain on developer productivity."
+
+2. The Solution (The Agentic Architecture)
+To solve this, I architected an Agentic AI solution using Microsoft Semantic Kernel and Python. I treated it not just as a chatbot, but as an autonomous debugging pipeline.
+
+I designed it with three specific layers:
+* Layer 1: Intelligent Ingestion (The Data Strategy) Raw logs are noisy. I wrote a Python middleware using Pandas to clean the logs and implemented Semantic Chunking. instead of splitting text arbitrarily, I split the data by Error Stack Trace blocks. This ensured that the Vector Database (we used FAISS) indexed complete error contexts, not just random lines.
+* Layer 2: The Retrieval Engine (The RAG) When a build failed, the Agent queried our Vector Store for 'historically similar errors.' It retrieved past Jira tickets and their resolutions. This allows the model to learn from our institutional knowledge—basically asking, 'Have we fixed this before?'
+* Layer 3: The Reasoning Agent (The 'Brain') I used Semantic Kernel’s Planner. I gave the agent a 'Diagnosis Plugin' with a Chain-of-Thought prompt. It takes the current error log + the retrieved past solutions and outputs a structured Root Cause Analysis (e.g., 'Infrastructure Timeout' vs. 'Code Logic Error')."
+
+3. The Outcome (The Metrics)
+"The results were immediate. We integrated this into our CI/CD pipeline.
+* It reduced our Mean Time to Resolution (MTTR) for regression failures by 40%.
+* It achieved a 90% accuracy rate on known infrastructure issues, allowing our engineers to focus only on the truly novel, complex bugs."
+
 ### Q1: Explain the overall architecture of your Defect Triage system.
 
 **Answer:**
