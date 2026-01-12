@@ -7,6 +7,7 @@ by comparing them against historical defects using RAG (Retrieval-Augmented Gene
 
 import json
 import os
+import logging
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
 from pathlib import Path
@@ -21,6 +22,9 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_
 
 from vector_memory import VectorMemory, SearchResult
 from log_ingestor import LogIngestor
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -72,6 +76,7 @@ class DefectTriageAgent:
             temperature: LLM temperature (0-1, lower = more deterministic)
             max_tokens: Maximum tokens for LLM response
         """
+        logger.info(f"Initializing DefectTriageAgent with deployment={deployment_name}, temperature={temperature}")
         self.vector_memory = vector_memory
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -109,6 +114,7 @@ class DefectTriageAgent:
         Returns:
             Formatted prompt string
         """
+        logger.debug(f"Creating analysis prompt with {len(similar_defects)} similar defects")
         prompt = """You are an expert DevOps engineer specializing in defect triage and root cause analysis.
 
 **Task**: Analyze a new error log by comparing it with similar historical defects and provide a detailed root cause analysis.
@@ -179,6 +185,7 @@ class DefectTriageAgent:
         Returns:
             TriageResult with analysis and recommendations
         """
+        logger.info(f"Analyzing defect with top_k={top_k}, error_log_length={len(error_log)}")
         # Step 1: Search for similar historical defects
         print("🔍 Searching for similar historical defects...")
         similar_defects = await self.vector_memory.search_similar_async(
@@ -277,6 +284,7 @@ class DefectTriageAgent:
         Returns:
             List of TriageResult for each error chunk
         """
+        logger.info(f"Analyzing log file: {log_file_path}")
         # Process log file
         print(f"📄 Processing log file: {log_file_path}")
         chunks = self.log_ingestor.process_log_file(log_file_path)
@@ -307,6 +315,7 @@ class DefectTriageAgent:
         Returns:
             List of TriageResult
         """
+        logger.info(f"Batch analyzing {len(error_logs)} error logs")
         results: List[TriageResult] = []
         
         for i, error_log in enumerate(error_logs, 1):
@@ -326,6 +335,7 @@ class DefectTriageAgent:
         Returns:
             Formatted summary report
         """
+        logger.info(f"Generating summary report for {len(results)} results")
         report = "=" * 80 + "\n"
         report += "DEFECT TRIAGE SUMMARY REPORT\n"
         report += "=" * 80 + "\n\n"

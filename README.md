@@ -2,6 +2,14 @@
 
 An Agentic AI system that automates the analysis of Jenkins failure logs using Microsoft Semantic Kernel and Azure OpenAI.
 
+## Features
+
+✅ **Intelligent Log Analysis** - Automatic defect triage using RAG pattern  
+✅ **Vector Similarity Search** - FAISS-based retrieval of similar historical defects  
+✅ **Azure OpenAI Integration** - Semantic Kernel with GPT-4 for root cause analysis  
+✅ **Comprehensive Logging** - Debug and monitor every function call  
+✅ **Evaluation Suite** - Metrics and performance testing  
+
 ## Architecture
 
 ### 1. Log Ingestor (`src/log_ingestor.py`) ✅
@@ -9,12 +17,14 @@ An Agentic AI system that automates the analysis of Jenkins failure logs using M
 - Removes timestamps using regex patterns
 - Chunks text into 50-line blocks centered around Exception keywords
 - Uses strict type hinting and Python 3.10+ syntax
+- **Logging**: File I/O, chunking operations, exception detection
 
 ### 2. Vector Memory (`src/vector_memory.py`) ✅
 - FAISS-based vector storage with multiple index types
 - Sentence-transformers embeddings (all-MiniLM-L6-v2)
 - Methods: `add_documents()`, `search_similar()`, `save()`, `load()`
 - Full async/await support for non-blocking operations
+- **Logging**: Embedding generation, FAISS operations, search queries
 
 ### 3. Semantic Kernel Agent (`src/defect_triage_agent.py`) ✅
 - Takes new error logs as input
@@ -22,6 +32,27 @@ An Agentic AI system that automates the analysis of Jenkins failure logs using M
 - Azure OpenAI analysis with structured JSON output
 - Returns root cause, confidence score, and recommendations
 - Full async/await implementation
+- **Logging**: Analysis requests, LLM interactions, confidence scores
+
+## Logging & Debugging
+
+The system includes comprehensive logging at every function for debugging and monitoring:
+
+```python
+from logging_config import setup_logging
+
+# Enable detailed logging
+setup_logging(log_level="DEBUG", log_to_file=True)
+```
+
+**Features:**
+- Function entry/exit logging with parameters
+- Performance timing for operations
+- Error tracking with full stack traces
+- Log rotation (10MB per file, 5 backups)
+- Multiple format options (simple, detailed, JSON)
+
+📚 See [docs/LOGGING.md](docs/LOGGING.md) for complete documentation.
 
 ## Installation
 
@@ -137,71 +168,6 @@ async def triage_defect():
 asyncio.run(triage_defect())
 ```
 
-### Step 4: Run REST API Server
-
-```bash
-# Start the API server
-python src/api.py
-
-# Or use uvicorn directly
-uvicorn src.api:app --host 0.0.0.0 --port 8000 --reload
-
-# Access the API documentation
-# Open http://localhost:8000/docs in your browser
-```
-
-#### API Endpoints
-
-- `GET /` - API information
-- `GET /health` - Health check
-- `GET /stats` - System statistics
-- `POST /analyze` - Analyze single error log
-- `POST /analyze/batch` - Batch analysis
-- `POST /add-defect` - Add defect to knowledge base
-- `POST /clear-knowledge-base` - Clear knowledge base
-
-#### Example API Usage
-
-```python
-from src.api_client import DefectTriageClient
-
-client = DefectTriageClient("http://localhost:8000")
-
-# Analyze a defect
-result = client.analyze_defect(
-    error_log="ERROR: Database connection timeout...",
-    top_k=3
-)
-
-print(f"Root Cause: {result['root_cause']}")
-print(f"Confidence: {result['confidence']:.2%}")
-```
-
-#### cURL Examples
-
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# Analyze defect
-curl -X POST http://localhost:8000/analyze \
-  -H "Content-Type: application/json" \
-  -d '{
-    "error_log": "ERROR: Database connection failed...",
-    "top_k": 3,
-    "include_similar": true
-  }'
-
-# Add new defect
-curl -X POST http://localhost:8000/add-defect \
-  -H "Content-Type: application/json" \
-  -d '{
-    "error_log": "ERROR: New error...",
-    "source": "Jenkins",
-    "metadata": {"severity": "high"}
-  }'
-```
-
 ## Quick Test
 
 Run the complete pipeline:
@@ -307,12 +273,7 @@ For production deployment:
 - ✅ Evaluation suite with multiple metrics
 - ✅ Per-category performance analysis
 - ✅ Confidence calibration measurement
-- ✅ Production-ready REST API with FastAPI
 - ✅ Docker containerization support
-- ✅ Auto-generated API documentation (OpenAPI/Swagger)
-- ✅ Health checks and monitoring endpoints
-- ✅ Batch processing capabilities
-- ✅ Background task processing
 
 ## Output Format
 
@@ -409,11 +370,10 @@ The evaluation suite provides:
 1. ~~Implement `VectorMemory` class with FAISS~~ ✅
 2. ~~Build Semantic Kernel agent with Azure OpenAI integration~~ ✅
 3. ~~Add evaluation and testing suite~~ ✅
-4. ~~Build REST API for production deployment~~ ✅
-5. Add web UI for interactive triage
-6. Implement continuous learning from new defects
-7. Add Kubernetes deployment manifests
-8. Implement request caching and rate limiting
+4. Add web UI for interactive triage
+5. Implement continuous learning from new defects
+6. Add Kubernetes deployment manifests
+7. Implement request caching and rate limiting
 
 ## Project Structure
 
@@ -424,9 +384,7 @@ AutonomousDefectTriageAgent/
 │   ├── log_ingestor.py       # Step 1: Log processing
 │   ├── vector_memory.py      # Step 2: Vector storage
 │   ├── defect_triage_agent.py # Step 3: SK agent
-│   ├── api.py                # REST API server
-│   └── api_client.py         # API client example
-├── tests/                    # Test files
+│   └── defect_triage_agent.py # Step 3: SK agent
 │   ├── __init__.py
 │   ├── test_defect_triage.py # Unit tests
 │   └── test_dataset.json     # Sample test cases

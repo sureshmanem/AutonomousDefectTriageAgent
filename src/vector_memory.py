@@ -6,6 +6,7 @@ for log chunks using sentence-transformers embeddings.
 """
 
 import pickle
+import logging
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict, Any
 from dataclasses import dataclass, field
@@ -17,6 +18,9 @@ import faiss
 from sentence_transformers import SentenceTransformer
 
 from log_ingestor import LogChunk
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -57,6 +61,7 @@ class VectorMemory:
             index_type: FAISS index type ('flat', 'ivf', or 'hnsw')
             dimension: Embedding dimension (auto-detected if None)
         """
+        logger.info(f"Initializing VectorMemory with model={model_name}, index_type={index_type}")
         self.model_name = model_name
         self.index_type = index_type
         
@@ -84,6 +89,7 @@ class VectorMemory:
         Returns:
             FAISS index instance
         """
+        logger.debug(f"Creating FAISS index of type: {self.index_type}")
         if self.index_type == "flat":
             # L2 distance (Euclidean)
             return faiss.IndexFlatL2(self.dimension)
@@ -110,6 +116,7 @@ class VectorMemory:
         Returns:
             Numpy array of embeddings (shape: [n_texts, dimension])
         """
+        logger.debug(f"Encoding {len(texts)} texts into embeddings")
         embeddings = self.encoder.encode(
             texts,
             convert_to_numpy=True,
@@ -150,6 +157,7 @@ class VectorMemory:
         Returns:
             Number of documents added
         """
+        logger.info(f"Adding {len(chunks)} documents to vector database")
         if not chunks:
             return 0
         
@@ -245,6 +253,7 @@ class VectorMemory:
         Returns:
             List of SearchResult objects, sorted by similarity
         """
+        logger.debug(f"Searching for similar documents with query length {len(query_text)}, top_k={top_k}")
         if len(self.chunks) == 0:
             return []
         
@@ -272,6 +281,7 @@ class VectorMemory:
                 metadata=self.metadata_store[idx]
             ))
         
+        logger.info(f"Found {len(results)} similar documents")
         return results
     
     async def search_similar_async(
@@ -329,6 +339,7 @@ class VectorMemory:
         Args:
             path: Directory path to save the memory
         """
+        logger.info(f"Saving vector memory to {path}")
         path = Path(path)
         path.mkdir(parents=True, exist_ok=True)
         
@@ -366,6 +377,7 @@ class VectorMemory:
         Returns:
             VectorMemory instance
         """
+        logger.info(f"Loading vector memory from {path}")
         path = Path(path)
         
         # Load config
@@ -396,6 +408,7 @@ class VectorMemory:
     
     def clear(self) -> None:
         """Clear all data from the vector memory."""
+        logger.info("Clearing vector memory")
         self.index.reset()
         self.chunks.clear()
         self.metadata_store.clear()
@@ -407,6 +420,7 @@ class VectorMemory:
         
         Returns:
             Dictionary with statistics
+        logger.debug("Getting vector memory statistics")
         """
         return {
             "model_name": self.model_name,

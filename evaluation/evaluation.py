@@ -6,6 +6,7 @@ Evaluates the agent's performance on test datasets using various metrics.
 
 import asyncio
 import json
+import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field, asdict
@@ -18,6 +19,9 @@ from sklearn.metrics import precision_score, recall_score, f1_score, confusion_m
 from defect_triage_agent import DefectTriageAgent, TriageResult
 from vector_memory import VectorMemory
 from log_ingestor import LogIngestor
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -102,6 +106,7 @@ class DefectTriageEvaluator:
             agent: DefectTriageAgent instance to evaluate
             category_keywords: Keywords for categorizing root causes
         """
+        logger.info("Initializing DefectTriageEvaluator")
         self.agent = agent
         
         # Default category keywords
@@ -151,6 +156,7 @@ class DefectTriageEvaluator:
         Returns:
             EvaluationResult with metrics
         """
+        logger.debug(f"Evaluating case: {case.id}")
         start_time = asyncio.get_event_loop().time()
         
         # Get agent prediction
@@ -196,6 +202,7 @@ class DefectTriageEvaluator:
         Returns:
             Tuple of (results list, aggregated metrics)
         """
+        logger.info(f"Evaluating agent on {len(test_cases)} test cases")
         print(f"🔬 Evaluating {len(test_cases)} test cases...\n")
         
         results: List[EvaluationResult] = []
@@ -304,6 +311,7 @@ class DefectTriageEvaluator:
         Returns:
             Report as string
         """
+        logger.info(f"Generating evaluation report for {len(results)} results")
         report = "=" * 80 + "\n"
         report += "DEFECT TRIAGE AGENT EVALUATION REPORT\n"
         report += "=" * 80 + "\n\n"
@@ -384,6 +392,7 @@ class DefectTriageEvaluator:
         Args:
             results: List of evaluation results
             output_path: Path to save CSV file
+        logger.info(f"Exporting {len(results)} results to CSV: {output_path}")
         """
         df = pd.DataFrame([r.to_dict() for r in results])
         df.to_csv(output_path, index=False)

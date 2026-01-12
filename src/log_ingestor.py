@@ -6,11 +6,15 @@ clean them by removing timestamps, and chunk them around Exception keywords.
 """
 
 import re
+import logging
 from pathlib import Path
 from typing import List, Optional
 from dataclasses import dataclass
 
 import pandas as pd
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -49,6 +53,7 @@ class LogIngestor:
             chunk_size: Number of lines per chunk (centered around exception)
             exception_keywords: List of keywords to identify exceptions
         """
+        logger.info(f"Initializing LogIngestor with chunk_size={chunk_size}")
         self.chunk_size = chunk_size
         self.exception_keywords = exception_keywords or [
             "Exception", "Error", "ERROR", "FATAL", "FAILED"
@@ -78,15 +83,20 @@ class LogIngestor:
             FileNotFoundError: If the log file doesn't exist
             IOError: If there's an error reading the file
         """
+        logger.debug(f"Reading log file: {file_path}")
         path = Path(file_path)
         
         if not path.exists():
+            logger.error(f"Log file not found: {file_path}")
             raise FileNotFoundError(f"Log file not found: {file_path}")
         
         try:
             with open(path, 'r', encoding='utf-8', errors='ignore') as f:
-                return f.read()
+                content = f.read()
+                logger.info(f"Successfully read log file: {file_path}, size: {len(content)} bytes")
+                return content
         except Exception as e:
+            logger.error(f"Error reading log file {file_path}: {e}")
             raise IOError(f"Error reading log file {file_path}: {e}")
     
     def remove_timestamps(self, text: str) -> str:
@@ -99,6 +109,7 @@ class LogIngestor:
         Returns:
             Cleaned text with timestamps removed
         """
+        logger.debug(f"Removing timestamps from text of length {len(text)}")
         cleaned_text = self.timestamp_regex.sub('', text)
         # Clean up multiple spaces
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
@@ -116,12 +127,14 @@ class LogIngestor:
         Returns:
             List of line numbers (0-indexed) containing exceptions
         """
+        logger.debug(f"Finding exception lines in {len(lines)} lines")
         exception_lines: List[int] = []
         
         for idx, line in enumerate(lines):
             if any(keyword in line for keyword in self.exception_keywords):
                 exception_lines.append(idx)
         
+        logger.info(f"Found {len(exception_lines)} exception lines")
         return exception_lines
     
     def create_chunk_around_exception(
@@ -139,6 +152,7 @@ class LogIngestor:
         Returns:
             LogChunk object containing the chunk and metadata
         """
+        logger.debug(f"Creating chunk around exception at line {exception_line}")
         total_lines = len(lines)
         half_chunk = self.chunk_size // 2
         
@@ -167,6 +181,7 @@ class LogIngestor:
         Returns:
             List of LogChunk objects
         """
+        logger.debug(f"Chunking log text of length {len(text)}")
         lines = text.split('\n')
         exception_lines = self.find_exception_lines(lines)
         
@@ -191,6 +206,7 @@ class LogIngestor:
                 chunks.append(chunk)
                 seen_ranges.add(range_key)
         
+        logger.info(f"Created {len(chunks)} chunks from log text")
         return chunks
     
     def process_log_file(self, file_path: str | Path) -> List[LogChunk]:
@@ -203,6 +219,7 @@ class LogIngestor:
         Returns:
             List of LogChunk objects ready for vector embedding
         """
+        logger.info(f"Processing log file: {file_path}")
         # Read file
         raw_content = self.read_log_file(file_path)
         
@@ -224,6 +241,7 @@ class LogIngestor:
         Returns:
             List of LogChunk objects
         """
+        logger.info(f"Processing log string of length {len(log_content)}")
         cleaned_content = self.remove_timestamps(log_content)
         chunks = self.chunk_log_text(cleaned_content)
         return chunks
@@ -238,6 +256,7 @@ class LogIngestor:
         Returns:
             DataFrame with columns: content, line_start, line_end, exception_line
         """
+        logger.debug(f"Converting {len(chunks)} chunks to DataFrame")
         data = {
             'content': [chunk.content for chunk in chunks],
             'line_start': [chunk.line_start for chunk in chunks],
