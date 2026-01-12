@@ -44,12 +44,6 @@ The system follows a layered architecture with three main components:
 - RAG pattern: retrieves top-k similar defects, then analyzes with context
 - Returns structured `TriageResult` with confidence scores and recommendations
 
-**4. API Layer (`api.py`)**
-- FastAPI REST endpoints for production deployment
-- Health checks, batch processing, and async operations
-- CORS middleware for cross-origin requests
-- Comprehensive error handling and validation
-
 **Data Flow:**
 ```
 Jenkins Log → LogIngestor → Vector Embeddings → FAISS Index
@@ -1892,3 +1886,17 @@ Plus: Faster fixes mean less downtime for customers."
 - Explore fine-tuning for domain adaptation
 - Learn more about LLM safety and alignment
 - Study multi-agent systems architecture
+
+
+
+The Job Description asks for "data observability and AI governance." This is their way of asking for LLMOps.
+
+Your Script: "I view LLMOps as the natural evolution of the CI/CD pipelines I’ve built for years. It’s not enough to just deploy an Agent; we need an Evaluation Pipeline.
+
+For my RAG Project (Project 1), I didn't just ship it. I implemented LLMOps principles by:
+
+Tracing: I logged every step of the 'Chain of Thought' so I could see exactly where the Agent failed.
+
+Cost Monitoring: I tracked token usage per query to ensure the tool remained within budget.
+
+Grounding Checks: I implemented a 'RAGAS' score to measure how well the answer was supported by the retrieved documents, effectively automated QA for the model."
