@@ -1900,3 +1900,22 @@ Tracing: I logged every step of the 'Chain of Thought' so I could see exactly wh
 Cost Monitoring: I tracked token usage per query to ensure the tool remained within budget.
 
 Grounding Checks: I implemented a 'RAGAS' score to measure how well the answer was supported by the retrieved documents, effectively automated QA for the model."
+
+Vector Search
+
+For the POC, I started with a FAISS Flat Index using Cosine Similarity. Since our dataset of log errors was relatively small (under 50k vectors), brute force was acceptable and ensured we had maximum accuracy for debugging the prompt logic.
+
+However, for the production architecture on Azure AI Search, I designed it to use HNSW (Hierarchical Navigable Small World). We needed low-latency retrieval (<50ms) to ensure the Agent didn't time out, and HNSW provides the best trade-off between speed and recall for high-dimensional text data."
+
+
+When the recruiter or technical manager asks:
+
+"How do you test a Generative AI model? You can't write an assertion like assert result == 'expected' because the wording changes every time."
+
+Your Answer:
+
+"That’s exactly why we moved to an 'LLM-as-a-Judge' approach using the RAGAS framework.
+
+For my Automated RCA Agent (Project One), I set up a pipeline where we fed the Agent 50 historical failure logs (our Golden Dataset). We then used GPT-4 to score the Agent's output on Faithfulness and Context Recall.
+
+If the Faithfulness score dropped below 0.8, we knew the model was hallucinating, so we adjusted the Temperature and the System Prompt. This allowed us to have a quantitative 'Quality Gate' in our CI/CD pipeline for the AI."
