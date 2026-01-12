@@ -16,9 +16,9 @@ I designed it with three specific layers:
 * Layer 3: The Reasoning Agent (The 'Brain') I used Semantic Kernel’s Planner. I gave the agent a 'Diagnosis Plugin' with a Chain-of-Thought prompt. It takes the current error log + the retrieved past solutions and outputs a structured Root Cause Analysis (e.g., 'Infrastructure Timeout' vs. 'Code Logic Error')."
 
 3. The Outcome (The Metrics)
-"The results were immediate. We integrated this into our CI/CD pipeline.
+The results were immediate. We integrated this into our CI/CD pipeline.
 * It reduced our Mean Time to Resolution (MTTR) for regression failures by 40%.
-* It achieved a 90% accuracy rate on known infrastructure issues, allowing our engineers to focus only on the truly novel, complex bugs."
+* It achieved a 90% accuracy rate on known infrastructure issues, allowing our engineers to focus only on the truly novel, complex bugs.
 
 ### Q1: Explain the overall architecture of your Defect Triage system.
 
